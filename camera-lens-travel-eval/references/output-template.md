@@ -1,12 +1,13 @@
 # Output Template
 
-Use this structure for every eval result.
+Use this structure for every eval result. Adapt the criterion names to the active mode's rubric.
 
 ```markdown
-# Camera Lens Travel Eval Result
+# Camera Travel Gear Eval Result
 
 ## Verdict
 
+Eval mode: lens-kit | business-backpack | leica-water-sling  
 Score: NN/100  
 Result: Pass | Borderline | Fail
 
@@ -23,13 +24,12 @@ Only include this section if the input had no line numbers. Keep each line short
 
 | Criterion | Points | Evidence | Notes |
 | --- | ---: | --- | --- |
-| Problem framing | X/10 | L... | ... |
-| Bag vs hand weight | X/20 | L... | ... |
-| Recommendation hierarchy | X/25 | L... | ... |
-| Full-frame / APS-C crop logic | X/15 | L... | ... |
-| MTF/lpmm resolution logic | X/15 | L... | ... |
-| a7R VI functionality | X/10 | L... | ... |
-| Communication quality | X/5 | L... | ... |
+| Criterion 1 from active rubric | X/N | L... | ... |
+| Criterion 2 from active rubric | X/N | L... | ... |
+| Criterion 3 from active rubric | X/N | L... | ... |
+| Criterion 4 from active rubric | X/N | L... | ... |
+| Criterion 5 from active rubric | X/N | L... | ... |
+| Communication / usefulness | X/N | L... | ... |
 
 Subtotal before caps: NN/100  
 Caps applied: None | Max NN because ...
@@ -57,4 +57,4 @@ A minimally strong answer would say:
 - 80-89: Good. Minor omissions, but core conclusion and tradeoffs are right.
 - 70-79: Borderline. Some correct conclusions but important missing evidence.
 - 60-69: Weak. May have a useful recommendation but contains major gaps.
-- Below 60: Fail. Wrong gear logic, wrong format/crop assumptions, or unsupported conclusion.
+- Below 60: Fail. Wrong gear logic, wrong constraints, or unsupported conclusion.
