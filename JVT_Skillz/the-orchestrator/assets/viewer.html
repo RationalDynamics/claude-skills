@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Orchestrator</title>
+<link rel="icon" type="image/svg+xml" href="/assets/orchestrator_logo.svg">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dagrejs/dagre@1.1.4/dist/dagre.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --red: #f85149;
+    --red-bg: #3d1214;
+    --blue: #58a6ff;
+    --blue-bg: #0c2d6b;
+    --green: #3fb950;
+    --green-bg: #0f2f18;
+    --gold: #d29922;
+    --edge: #484f58;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+    transition: margin-left 0.3s ease;
+  }
+
+  #header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  #header .meta {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+
+  #unlock-btn {
+    padding: 8px 20px;
+    background: var(--green);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  #unlock-btn.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #unlock-btn.active:hover {
+    filter: brightness(1.1);
+  }
+
+  #unlock-btn.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  #canvas {
+    width: 100%;
+    height: calc(100vh - 52px - 36px);
+    transition: margin-left 0.3s ease;
+  }
+
+  body.sidebar-open #canvas {
+    margin-left: 300px;
+  }
+
+  body.sidebar-open #header {
+    margin-left: 300px;
+    transition: margin-left 0.3s ease;
+  }
+
+  body.sidebar-open #transition-banner {
+    margin-left: 300px;
+    transition: margin-left 0.3s ease;
+  }
+
+  .node-group { cursor: pointer; }
+  .node-group.disabled { cursor: default; opacity: 0.35; }
+
+  .node-rect {
+    rx: 8;
+    ry: 8;
+    stroke-width: 2;
+    transition: filter 0.2s;
+  }
+
+  .node-group:not(.disabled):hover .node-rect {
+    filter: brightness(1.3);
+  }
+
+  .node-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--text);
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  .node-sublabel {
+    font-size: 11px;
+    fill: var(--text-muted);
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  .node-mode-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .edge {
+    fill: none;
+    stroke: var(--edge);
+    stroke-width: 1.5;
+    opacity: 0.5;
+  }
+
+  .edge:hover {
+    opacity: 1;
+    stroke-width: 2;
+  }
+
+  .edge-arrow {
+    fill: var(--edge);
+  }
+
+  .level-label {
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .level-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 6 4;
+  }
+
+  #tooltip {
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    max-width: 350px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  #tooltip.visible { opacity: 1; }
+
+  #tooltip h3 {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  #tooltip .field {
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  #tooltip .field strong {
+    color: var(--text);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    padding: 8px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .banner-running {
+    background: var(--blue-bg);
+    color: var(--blue);
+  }
+
+  .banner-failed {
+    background: var(--red-bg);
+    color: var(--red);
+  }
+
+  .banner-complete {
+    background: var(--green-bg);
+    color: var(--green);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .node-rect.status-blue {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .node-rect.status-locked {
+    stroke: var(--gold);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    z-index: 20;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding-top: 80px;
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-300px);
+  }
+
+  #sidebar-toggle {
+    position: absolute;
+    right: -32px;
+    top: 50%;
+    width: 32px;
+    height: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 21;
+  }
+
+  #sidebar-toggle:hover {
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  .sidebar-content {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .sidebar-heading {
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .sidebar-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background 0.15s, opacity 0.15s;
+  }
+
+  .sidebar-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .sidebar-btn-primary {
+    background: var(--green);
+    color: var(--bg);
+    border-color: var(--green);
+  }
+
+  .sidebar-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  .sidebar-btn-action {
+    background: var(--blue-bg);
+    color: var(--blue);
+    border-color: var(--blue);
+  }
+
+  .sidebar-btn-action:hover:not(:disabled) {
+    background: var(--blue);
+    color: var(--bg);
+  }
+
+  .sidebar-btn-patch {
+    background: #1a0a2e;
+    color: #b48eff;
+    border-color: #7c3aed;
+  }
+
+  .sidebar-btn-patch:hover:not(:disabled) {
+    background: #7c3aed;
+    color: #fff;
+  }
+
+  .patch-wrapper {
+    position: relative;
+  }
+
+  .patch-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .patch-wrapper:hover .patch-tooltip {
+    display: block;
+  }
+
+  .queue-list {
+    margin: 8px 0 12px;
+    min-height: 40px;
+  }
+
+  .queue-item {
+    padding: 8px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+
+  .queue-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    display: block;
+  }
+
+  .queue-item-summary {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .empty-queue {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 12px 0;
+  }
+
+  .verifier-section {
+    margin-top: 4px;
+  }
+
+  .verifier-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .verifier-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--border);
+    border-radius: 22px;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider:before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--text);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--gold);
+  }
+
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+  }
+
+  #verify-instructions {
+    width: 100%;
+    min-height: 150px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 12px;
+    resize: vertical;
+    margin-bottom: 8px;
+  }
+
+  #verify-instructions::placeholder {
+    color: var(--text-muted);
+  }
+
+  #verify-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, background 0.2s;
+    margin-right: 8px;
+  }
+
+  #verify-btn.verify-ready {
+    background: var(--blue);
+    color: var(--bg);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #verify-btn.verify-running {
+    background: var(--blue);
+    color: var(--bg);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  #verify-btn.verify-passed {
+    background: var(--green);
+    color: var(--bg);
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  #verify-btn:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div>
+      <h1>The Orchestrator</h1>
+      <span style="font-size:12px;color:var(--text-muted);letter-spacing:0.05em">by JVT</span>
+    </div>
+    <img src="/assets/orchestrator_logo.svg" alt="Orchestrator logo" style="height:48px;width:auto;filter:drop-shadow(0 0 1px rgba(255,255,255,0.3))">
+  </div>
+  <div class="meta">
+    <span id="level-indicator">Level 0</span>
+    <span id="node-counts"></span>
+    <button id="verify-btn" onclick="verifyLevel()" style="display:none">Verify Level</button>
+    <button id="unlock-btn" onclick="unlockNextLevel()">Unlock Next Level</button>
+  </div>
+</div>
+
+<div id="sidebar" class="sidebar collapsed">
+  <button id="sidebar-toggle" onclick="toggleSidebar()" title="Feature Queue">&rsaquo;</button>
+  <div class="sidebar-content">
+    <h3 class="sidebar-heading">Feature Queue</h3>
+    <button class="sidebar-btn sidebar-btn-primary" id="add-feature-btn" onclick="addFeature()">+ Add Feature</button>
+    <div id="queue-list" class="queue-list">
+      <p class="empty-queue">No pending requests</p>
+    </div>
+    <button class="sidebar-btn sidebar-btn-action" id="update-graph-btn" onclick="updateGraph()" disabled title="No features in queue">Update Graph</button>
+    <hr class="sidebar-divider">
+    <div class="patch-wrapper">
+      <button class="sidebar-btn sidebar-btn-patch" id="patch-btn" onclick="launchPatch()">Patch</button>
+      <div class="patch-tooltip">Apply a quick fix directly on the feature branch without a worktree. All node sessions must be closed first.</div>
+    </div>
+    <hr class="sidebar-divider">
+    <div class="verifier-section">
+      <div class="verifier-toggle-row">
+        <span class="verifier-label">Verifier</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="verify-toggle" onchange="toggleVerifier(this)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="verifier-editor" style="display:none">
+        <textarea id="verify-instructions" rows="12" placeholder="Verification playbook — describe what to check, which pages to visit, what 'working' looks like..."></textarea>
+        <button class="sidebar-btn sidebar-btn-action" onclick="saveVerifyInstructions()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="transition-banner" class="banner" style="display:none"></div>
+<svg id="canvas"></svg>
+
+<div id="tooltip">
+  <h3 id="tip-name"></h3>
+  <div class="field" id="tip-desc"></div>
+  <div class="field" id="tip-mode"></div>
+  <div class="field" id="tip-files"></div>
+  <div class="field" id="tip-status"></div>
+  <div class="field" id="tip-times"></div>
+</div>
+
+<script>
+const POLL_INTERVAL = 2000;
+const NODE_W = 200;
+const NODE_H = 70;
+const COLORS = {
+  red:   { fill: '#3d1214', stroke: '#f85149' },
+  blue:  { fill: '#0c2d6b', stroke: '#58a6ff' },
+  green: { fill: '#0f2f18', stroke: '#3fb950' },
+};
+
+let graph = null;
+let state = null;
+let svg, g, zoom;
+
+async function init() {
+  [graph, state] = await Promise.all([
+    fetch('/api/graph').then(r => r.json()),
+    fetch('/api/state').then(r => r.json()),
+  ]);
+
+  document.querySelector('#header h1').textContent = 'The Orchestrator';
+  setupSVG();
+  renderDAG();
+  updateState(state);
+  setInterval(pollState, POLL_INTERVAL);
+  pollQueue();
+  setInterval(pollQueue, 5000);
+  pollVerifyStatus();
+  setInterval(pollVerifyStatus, 3000);
+
+  // Initialize verifier toggle from state
+  if (state.verify_enabled) {
+    const toggle = document.getElementById('verify-toggle');
+    toggle.checked = true;
+    document.getElementById('verifier-editor').style.display = 'block';
+    loadVerifyInstructions();
+  }
+}
+
+function setupSVG() {
+  const canvas = d3.select('#canvas');
+  const { width, height } = canvas.node().getBoundingClientRect();
+
+  zoom = d3.zoom()
+    .scaleExtent([0.3, 3])
+    .on('zoom', (e) => g.attr('transform', e.transform));
+
+  svg = canvas
+    .attr('width', width)
+    .attr('height', height)
+    .call(zoom);
+
+  // Arrow marker — sized to stay visible at default zoom
+  svg.append('defs').append('marker')
+    .attr('id', 'arrow')
+    .attr('viewBox', '0 0 12 12')
+    .attr('refX', 10)
+    .attr('refY', 6)
+    .attr('markerWidth', 14)
+    .attr('markerHeight', 14)
+    .attr('markerUnits', 'userSpaceOnUse')
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,0 L12,6 L0,12 Z')
+    .attr('class', 'edge-arrow');
+
+  g = svg.append('g').attr('class', 'viewport');
+}
+
+function renderDAG() {
+  // Build dagre graph
+  const dg = new dagre.graphlib.Graph();
+  dg.setGraph({ rankdir: 'TB', ranksep: 80, nodesep: 40, marginx: 40, marginy: 40 });
+  dg.setDefaultEdgeLabel(() => ({}));
+
+  const allNodes = [];
+  for (const level of graph.levels) {
+    for (const node of level.nodes) {
+      dg.setNode(node.id, { width: NODE_W, height: NODE_H, ...node, level: level.level });
+      allNodes.push({ ...node, level: level.level });
+    }
+  }
+
+  // Edges from dependencies
+  for (const node of allNodes) {
+    for (const dep of (node.dependencies || [])) {
+      dg.setEdge(dep, node.id);
+    }
+  }
+
+  dagre.layout(dg);
+
+  // Snap Y positions to explicit levels. Dagre's X spacing is good but
+  // it misranks nodes whose only edges skip levels. We override Y per
+  // level, then redraw edges as clean S-curves between snapped positions.
+  const levels = graph.levels.map(l => l.level).sort((a, b) => a - b);
+  const LEVEL_GAP = 120;
+  const MARGIN_TOP = 60;
+  for (const nid of dg.nodes()) {
+    const n = dg.node(nid);
+    n.y = MARGIN_TOP + n.level * LEVEL_GAP;
+  }
+
+  const levelYs = {};
+  for (const nid of dg.nodes()) {
+    const n = dg.node(nid);
+    const lvl = n.level;
+    if (!(lvl in levelYs)) levelYs[lvl] = { min: Infinity, max: -Infinity };
+    levelYs[lvl].min = Math.min(levelYs[lvl].min, n.y - NODE_H / 2);
+    levelYs[lvl].max = Math.max(levelYs[lvl].max, n.y + NODE_H / 2);
+  }
+
+  const graphWidth = dg.graph().width || 800;
+
+  for (const lvl of levels) {
+    const y = levelYs[lvl].min - 30;
+    g.append('line')
+      .attr('class', 'level-line')
+      .attr('x1', -20)
+      .attr('y1', y)
+      .attr('x2', graphWidth + 20)
+      .attr('y2', y);
+
+    g.append('text')
+      .attr('class', 'level-label')
+      .attr('x', -10)
+      .attr('y', y - 6)
+      .text(`Level ${lvl}`);
+  }
+
+  // Draw edges as S-curves between snapped node positions
+  const ARROW_GAP = 8;
+  for (const e of dg.edges()) {
+    const src = dg.node(e.v);
+    const tgt = dg.node(e.w);
+    const x1 = src.x, y1 = src.y + NODE_H / 2;
+    const x2 = tgt.x, y2 = tgt.y - NODE_H / 2 - ARROW_GAP;
+    const midY = (y1 + y2) / 2;
+    const d = `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`;
+    g.append('path')
+      .attr('class', 'edge')
+      .attr('d', d)
+      .attr('marker-end', 'url(#arrow)')
+      .attr('data-from', e.v)
+      .attr('data-to', e.w);
+  }
+
+  // Draw nodes
+  for (const nid of dg.nodes()) {
+    const n = dg.node(nid);
+    const group = g.append('g')
+      .attr('class', 'node-group')
+      .attr('data-id', n.id)
+      .attr('transform', `translate(${n.x - NODE_W / 2}, ${n.y - NODE_H / 2})`)
+      .on('click', () => onNodeClick(n))
+      .on('mouseenter', (evt) => showTooltip(evt, n))
+      .on('mousemove', (evt) => moveTooltip(evt))
+      .on('mouseleave', hideTooltip);
+
+    group.append('rect')
+      .attr('class', 'node-rect')
+      .attr('width', NODE_W)
+      .attr('height', NODE_H)
+      .attr('fill', COLORS.red.fill)
+      .attr('stroke', COLORS.red.stroke);
+
+    group.append('text')
+      .attr('class', 'node-label')
+      .attr('x', NODE_W / 2)
+      .attr('y', NODE_H / 2 - 6)
+      .text(truncate(n.name, 22));
+
+    group.append('text')
+      .attr('class', 'node-sublabel')
+      .attr('x', NODE_W / 2)
+      .attr('y', NODE_H / 2 + 10)
+      .text(n.mode === 'agent-team' ? 'agent-team' : 'solo');
+
+    if (n.mode === 'agent-team') {
+      group.append('text')
+        .attr('class', 'node-mode-badge')
+        .attr('x', NODE_W / 2)
+        .attr('y', NODE_H / 2 + 24)
+        .attr('fill', '#d29922')
+        .text('TEAM');
+    }
+  }
+
+  // Center the graph
+  const { width: svgW, height: svgH } = svg.node().getBoundingClientRect();
+  const gw = dg.graph().width || 800;
+  const gh = dg.graph().height || 600;
+  const scale = Math.min(svgW / (gw + 100), svgH / (gh + 100), 1);
+  const tx = (svgW - gw * scale) / 2;
+  const ty = (svgH - gh * scale) / 2;
+  svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
+function updateState(newState) {
+  state = newState;
+  const currentLevel = state.current_level || 0;
+  document.getElementById('level-indicator').textContent = `Level ${currentLevel}`;
+
+  let red = 0, blue = 0, green = 0;
+
+  for (const [nodeId, ns] of Object.entries(state.nodes)) {
+    const status = ns.status || 'red';
+    if (status === 'red') red++;
+    else if (status === 'blue') blue++;
+    else if (status === 'green') green++;
+
+    const locked = ns.locked === true;
+    const color = COLORS[status] || COLORS.red;
+    const group = g.select(`[data-id="${nodeId}"]`);
+    if (group.empty()) continue;
+
+    const rect = group.select('.node-rect');
+    rect.attr('fill', color.fill).attr('stroke', locked ? '#d29922' : color.stroke);
+    rect.classed('status-blue', status === 'blue' && !locked);
+    rect.classed('status-locked', locked);
+
+    // Determine if node is clickable
+    const node = findNode(nodeId);
+    const isCurrentLevel = node && node.level <= currentLevel;
+    const isGreen = status === 'green';
+    group.classed('disabled', !isCurrentLevel || isGreen);
+  }
+
+  // Update counts
+  document.getElementById('node-counts').innerHTML =
+    `<span class="badge badge-red">${red} pending</span>` +
+    `<span class="badge badge-blue">${blue} done</span>` +
+    `<span class="badge badge-green">${green} merged</span>`;
+
+  // Transition status handling
+  const transStatus = state.transition_status || null;
+  const transError = state.transition_error || null;
+  const banner = document.getElementById('transition-banner');
+  const maxLevel = Math.max(...graph.levels.map(l => l.level));
+
+  if (transStatus === 'running') {
+    const phase = state.transition_phase || null;
+    let phaseMsg = 'Processing level transition...';
+    if (phase === 'consolidating') phaseMsg = 'Consolidating addendums...';
+    else if (phase === 'restructuring') phaseMsg = 'Evaluating graph structure...';
+    else if (phase === 'generating') phaseMsg = 'Generating contexts for next level...';
+    banner.className = 'banner banner-running';
+    banner.innerHTML = '<span class="spinner"></span> ' + phaseMsg;
+    banner.style.display = 'flex';
+    banner._sawRunning = true;
+  } else if (transStatus === 'failed') {
+    banner.className = 'banner banner-failed';
+    banner.innerHTML = `Context generation failed: ${transError || 'unknown error'}. Click "Unlock Next Level" to retry.`;
+    banner.style.display = 'flex';
+  } else if (transStatus === 'complete' && banner._sawRunning) {
+    banner.className = 'banner banner-complete';
+    banner.innerHTML = 'Level unlocked — click a red node to begin.';
+    banner.style.display = 'flex';
+    banner._sawRunning = false;
+    setTimeout(() => { banner.style.display = 'none'; }, 5000);
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Unlock button state
+  const currentNodes = nodesAtLevel(currentLevel);
+  const allGreen = currentNodes.every(n => (state.nodes[n.id] || {}).status === 'green');
+  const btn = document.getElementById('unlock-btn');
+  const canUnlock = allGreen && currentLevel < maxLevel && transStatus !== 'running';
+  const verifyGate = verifyStatus && verifyStatus.enabled && verifyStatus.status !== 'passed';
+  btn.classList.toggle('active', canUnlock && !verifyGate);
+
+  if (transStatus === 'running') {
+    btn.textContent = 'Transitioning...';
+    btn.classList.add('loading');
+  } else {
+    btn.textContent = 'Unlock Next Level';
+    btn.classList.remove('loading');
+  }
+
+  // Nodes at the next level stay disabled until transition is complete
+  // Locked nodes are also disabled (non-clickable) but get distinct styling
+  for (const [nodeId, ns] of Object.entries(state.nodes)) {
+    const node = findNode(nodeId);
+    if (!node) continue;
+    const group = g.select(`[data-id="${nodeId}"]`);
+    if (group.empty()) continue;
+    const isGreen = (ns.status || 'red') === 'green';
+    const isLocked = ns.locked === true;
+    const isReady = node.level <= currentLevel && transStatus !== 'running';
+    group.classed('disabled', !isReady || isGreen || isLocked);
+  }
+
+  updateSidebarButtons();
+  updateVerifyButton();
+}
+
+async function pollState() {
+  try {
+    const prevTransStatus = state ? state.transition_status : null;
+    const newState = await fetch('/api/state').then(r => r.json());
+    // If a transition just completed, re-fetch the graph (it may have been restructured)
+    if (prevTransStatus === 'running' && newState.transition_status !== 'running') {
+      const newGraph = await fetch('/api/graph').then(r => r.json());
+      if (JSON.stringify(newGraph) !== JSON.stringify(graph)) {
+        graph = newGraph;
+        g.selectAll('*').remove();
+        renderDAG();
+      }
+    }
+    updateState(newState);
+    updateVerifyButton();
+  } catch (e) {
+    // Server might be restarting during level transition
+  }
+}
+
+async function onNodeClick(node) {
+  const ns = (state.nodes[node.id] || {});
+  const currentLevel = state.current_level || 0;
+
+  if (node.level > currentLevel) return;
+  if (ns.status === 'green') return;
+  if (isNodeLocked(node.id)) return;
+
+  try {
+    const res = await fetch(`/api/launch/${node.id}`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) {
+      console.error('Launch failed:', data.error);
+    }
+  } catch (e) {
+    console.error('Launch error:', e);
+  }
+}
+
+async function unlockNextLevel() {
+  try {
+    const res = await fetch('/api/unlock-next-level', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) {
+      alert(data.error);
+    }
+    // State polling will pick up transition_status changes
+  } catch (e) {
+    alert('Level transition failed: ' + e.message);
+  }
+}
+
+function showTooltip(evt, node) {
+  const tip = document.getElementById('tooltip');
+  const ns = state.nodes[node.id] || {};
+
+  document.getElementById('tip-name').textContent = node.name;
+  document.getElementById('tip-desc').innerHTML = `<strong>Description:</strong> ${node.description || 'N/A'}`;
+  document.getElementById('tip-mode').innerHTML = `<strong>Mode:</strong> ${node.mode || 'solo'}`;
+  document.getElementById('tip-files').innerHTML = `<strong>Files:</strong> ${(node.files || []).join(', ') || 'N/A'}`;
+
+  const statusColor = ns.locked ? '#d29922' : COLORS[ns.status || 'red'].stroke;
+  const statusText = ns.locked ? 'Active session — terminal open' : (ns.status || 'red');
+  document.getElementById('tip-status').innerHTML =
+    `<strong>Status:</strong> <span style="color:${statusColor}">${statusText}</span>`;
+
+  let times = '';
+  if (ns.started_at) times += `<strong>Started:</strong> ${new Date(ns.started_at).toLocaleString()}<br>`;
+  if (ns.completed_at) times += `<strong>Completed:</strong> ${new Date(ns.completed_at).toLocaleString()}`;
+  document.getElementById('tip-times').innerHTML = times;
+
+  tip.classList.add('visible');
+  moveTooltip(evt);
+}
+
+function moveTooltip(evt) {
+  const tip = document.getElementById('tooltip');
+  const x = evt.clientX + 16;
+  const y = evt.clientY + 16;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('visible');
+}
+
+function findNode(nodeId) {
+  for (const lvl of graph.levels) {
+    for (const n of lvl.nodes) {
+      if (n.id === nodeId) return { ...n, level: lvl.level };
+    }
+  }
+  return null;
+}
+
+function nodesAtLevel(level) {
+  for (const lvl of graph.levels) {
+    if (lvl.level === level) return lvl.nodes;
+  }
+  return [];
+}
+
+function isNodeLocked(nodeId) {
+  const ns = state.nodes[nodeId];
+  return ns && ns.locked === true;
+}
+
+function truncate(str, len) {
+  return str.length > len ? str.slice(0, len - 1) + '...' : str;
+}
+
+// --- Sidebar ---
+
+let sidebarOpen = false;
+let queueItems = [];
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  document.body.classList.toggle('sidebar-open', sidebarOpen);
+  document.getElementById('sidebar-toggle').innerHTML = sidebarOpen ? '&lsaquo;' : '&rsaquo;';
+  // Recalculate SVG dimensions
+  const canvas = document.getElementById('canvas');
+  const { width, height } = canvas.getBoundingClientRect();
+  svg.attr('width', width).attr('height', height);
+}
+
+async function pollQueue() {
+  try {
+    const data = await fetch('/api/queue').then(r => r.json());
+    queueItems = data.items || [];
+    renderQueue(queueItems);
+    updateSidebarButtons();
+  } catch (e) {}
+}
+
+function renderQueue(items) {
+  const list = document.getElementById('queue-list');
+  if (items.length === 0) {
+    list.innerHTML = '<p class="empty-queue">No pending requests</p>';
+    return;
+  }
+  list.innerHTML = items.map(item =>
+    `<div class="queue-item">
+      <span class="queue-item-title">${escapeHtml(item.title)}</span>
+      <span class="queue-item-summary">${escapeHtml(item.summary)}</span>
+    </div>`
+  ).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function updateSidebarButtons() {
+  if (!state || !graph) return;
+  const currentLevel = state.current_level || 0;
+  const currentNodes = nodesAtLevel(currentLevel);
+  const allGreen = currentNodes.every(n => (state.nodes[n.id] || {}).status === 'green');
+  const transRunning = state.transition_status === 'running';
+  const hasQueue = queueItems.length > 0;
+
+  let anyNodeActive = false;
+  for (const [nodeId, ns] of Object.entries(state.nodes || {})) {
+    if (ns.locked) { anyNodeActive = true; break; }
+  }
+  const patchActive = state.patch_locked || false;
+
+  // Update Graph button
+  const ugBtn = document.getElementById('update-graph-btn');
+  if (!hasQueue) {
+    ugBtn.disabled = true;
+    ugBtn.title = 'No features in queue';
+  } else if (allGreen) {
+    ugBtn.disabled = true;
+    ugBtn.title = 'All current-level nodes are green — use Unlock Next Level instead';
+  } else if (transRunning) {
+    ugBtn.disabled = true;
+    ugBtn.title = 'Update in progress...';
+  } else {
+    ugBtn.disabled = false;
+    ugBtn.title = 'Restructure graph to incorporate queued features';
+  }
+
+  // Patch button
+  const patchBtn = document.getElementById('patch-btn');
+  if (anyNodeActive) {
+    patchBtn.disabled = true;
+    patchBtn.title = 'Cannot patch while node sessions are active';
+  } else if (patchActive) {
+    patchBtn.disabled = true;
+    patchBtn.title = 'A patch is already in progress';
+  } else if (transRunning) {
+    patchBtn.disabled = true;
+    patchBtn.title = 'A level transition is in progress';
+  } else {
+    patchBtn.disabled = false;
+    patchBtn.title = 'Quick fix on feature branch';
+  }
+}
+
+async function addFeature() {
+  try {
+    const res = await fetch('/api/add-feature', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) alert(data.error);
+  } catch (e) {
+    alert('Failed to launch feature session: ' + e.message);
+  }
+}
+
+async function updateGraph() {
+  if (!confirm('This will restructure the graph to incorporate queued features. Continue?')) return;
+  try {
+    const res = await fetch('/api/update-graph', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) alert(data.error);
+  } catch (e) {
+    alert('Graph update failed: ' + e.message);
+  }
+}
+
+async function launchPatch() {
+  try {
+    const res = await fetch('/api/patch', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) alert(data.error);
+  } catch (e) {
+    alert('Patch launch failed: ' + e.message);
+  }
+}
+
+// --- Verifier ---
+
+let verifyStatus = null;
+
+async function pollVerifyStatus() {
+  try {
+    verifyStatus = await fetch('/api/verify-status').then(r => r.json());
+    updateVerifyButton();
+  } catch (e) {}
+}
+
+function updateVerifyButton() {
+  const btn = document.getElementById('verify-btn');
+  if (!btn) return;
+
+  // Hide if verifier not enabled
+  if (!verifyStatus || !verifyStatus.enabled) {
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.style.display = 'inline-block';
+
+  // Check if all current-level nodes are green
+  const currentLevel = state ? (state.current_level || 0) : 0;
+  const currentNodes = nodesAtLevel(currentLevel);
+  const allGreen = currentNodes.every(n => (state.nodes[n.id] || {}).status === 'green');
+
+  if (!allGreen) {
+    btn.disabled = true;
+    btn.className = '';
+    btn.textContent = 'Verify Level';
+    btn.title = 'Complete all nodes at this level first';
+    return;
+  }
+
+  const vs = verifyStatus.status;
+  if (vs === 'running') {
+    btn.disabled = true;
+    btn.className = 'verify-running';
+    btn.innerHTML = '<span class="spinner"></span> Verifying...';
+    btn.title = 'Verification in progress';
+  } else if (vs === 'passed') {
+    btn.disabled = true;
+    btn.className = 'verify-passed';
+    btn.textContent = 'Verified';
+    btn.title = 'Verification passed';
+  } else {
+    // pending, failed, or stale — all show as ready to (re-)verify
+    btn.disabled = false;
+    btn.className = 'verify-ready';
+    btn.textContent = vs === 'failed' ? 'Re-verify Level' : vs === 'stale' ? 'Re-verify Level' : 'Verify Level';
+    btn.title = vs === 'failed' ? 'Previous verification failed — click to retry' : vs === 'stale' ? 'Patches applied since last verification — re-verify needed' : 'Run E2E verification';
+  }
+}
+
+async function verifyLevel() {
+  try {
+    const res = await fetch('/api/verify-level', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) alert(data.error);
+  } catch (e) {
+    alert('Verification launch failed: ' + e.message);
+  }
+}
+
+async function toggleVerifier(checkbox) {
+  try {
+    const res = await fetch('/api/verify-toggle', { method: 'POST' });
+    const data = await res.json();
+    checkbox.checked = data.enabled;
+    const editor = document.getElementById('verifier-editor');
+    if (data.enabled) {
+      editor.style.display = 'block';
+      loadVerifyInstructions();
+    } else {
+      editor.style.display = 'none';
+    }
+    // Update verify button visibility
+    pollVerifyStatus();
+  } catch (e) {
+    alert('Toggle failed: ' + e.message);
+    checkbox.checked = !checkbox.checked;
+  }
+}
+
+async function loadVerifyInstructions() {
+  try {
+    const data = await fetch('/api/verify-instructions').then(r => r.json());
+    document.getElementById('verify-instructions').value = data.content || '';
+  } catch (e) {}
+}
+
+async function saveVerifyInstructions() {
+  const content = document.getElementById('verify-instructions').value;
+  try {
+    const res = await fetch('/api/verify-instructions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({content})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // Brief visual feedback
+      const btn = document.querySelector('#verifier-editor .sidebar-btn');
+      const orig = btn.textContent;
+      btn.textContent = 'Saved';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    }
+  } catch (e) {
+    alert('Save failed: ' + e.message);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Breakpoint storage configuration
+# persist: false → blocks saved to /tmp/claude-breakpoints/ (cleared on reboot)
+# persist: true  → blocks saved to ~/.claude/breakpoints/ (permanent)
+persist: false
