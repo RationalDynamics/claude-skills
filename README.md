@@ -12,10 +12,10 @@ Add the marketplace once, then install the plugins you want:
 ```sh
 # point at this checkout (local), or a git URL once it's pushed
 /plugin marketplace add /Users/chris/devo/skills
-# /plugin marketplace add https://github.com/<org>/skills
+# /plugin marketplace add https://github.com/RationalDynamics/claude-skills
 
 # install à la carte — each skill is independent
-/plugin install storm-research@devo-skills
+/plugin install storm-research@devo-skills      # à la carte
 /plugin install breakpoint@devo-skills
 ```
 
