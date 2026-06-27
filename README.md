@@ -30,6 +30,16 @@ travel-lens question (Sony a7R VI/V vs Leica M10 kits) using a 100-point rubric,
 gold-fact baseline, line-grounded evidence selection, and score caps for critical
 errors. Useful as a template for building rigorous, auditable evals.
 
+### [`scaffold-agent-team`](scaffold-agent-team/SKILL.md)
+Stands up a **repo-coupled multi-agent team** for a target repository: it reads the
+repo's conventions (stack, test/type gates, migration workflow, deploy discipline,
+hard invariants) and emits customized, project-local Claude Code agents
+(lead/architect/backend/test/devops, adapted per repo), slash commands, and a
+coordination protocol — then adversarially verifies the generated claims against the
+repo. The generalized recipe behind the scry-team (scry-api) and dis-team (rd-dis).
+Unlike the other skills here, its output is version-controlled config that lives **in
+the target repo**, not a portable artifact.
+
 ## Install
 
 Claude Code discovers skills from `~/.claude/skills/<name>/` (personal, available in
@@ -41,6 +51,7 @@ single editable copy) or copy the folders:
 ln -s "$PWD/storm-research"          ~/.claude/skills/storm-research
 ln -s "$PWD/costorm-session"         ~/.claude/skills/costorm-session
 ln -s "$PWD/camera-lens-travel-eval" ~/.claude/skills/camera-lens-travel-eval
+ln -s "$PWD/scaffold-agent-team"     ~/.claude/skills/scaffold-agent-team
 ```
 
 ## Layout
