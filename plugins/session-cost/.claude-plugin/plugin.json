@@ -1,0 +1,9 @@
+{
+  "name": "session-cost",
+  "description": "Report token usage, wall-clock time, and per-model cost for Claude Code sessions by parsing the on-disk ~/.claude/projects JSONL transcripts — grouped by session or git worktree, with a compare mode. Dedups streamed/re-serialized usage and prices per model so totals reconcile with ccusage. Read-only.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

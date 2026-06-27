@@ -45,6 +45,9 @@ Pull in new/updated skills later with `/plugin marketplace update devo-skills`, 
 **Evals**
 - [`camera-lens-travel-eval`](plugins/camera-lens-travel-eval/skills/camera-lens-travel-eval/SKILL.md) — worked-example eval: grades a candidate answer with a 100-point rubric, gold-fact baseline, line-grounded evidence, and critical-error caps. A template for rigorous, auditable evals.
 
+**Observability**
+- [`session-cost`](plugins/session-cost/skills/session-cost/SKILL.md) — report token usage, wall-clock time, and per-model cost for Claude Code sessions from the on-disk `~/.claude/projects` JSONL transcripts; grouped by session or git worktree, with a compare mode. Dedups streamed/re-serialized usage and prices per model so totals reconcile with `ccusage`. Useful where `/cost` is unavailable (desktop app). Read-only.
+
 ## Add your own skill
 
 1. **Create the skill** at `plugins/<name>/skills/<name>/SKILL.md` (plus optional
