@@ -1,0 +1,9 @@
+{
+  "name": "tdd",
+  "description": "Test-driven development with a red-green-refactor loop, plus references on deep modules, interface design, mocking, and refactoring.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

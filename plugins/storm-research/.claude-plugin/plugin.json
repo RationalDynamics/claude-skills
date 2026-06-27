@@ -1,0 +1,9 @@
+{
+  "name": "storm-research",
+  "description": "Perspective-driven, outline-first long-form research (Stanford STORM): multi-perspective research conversations, an evidence-grounded outline, a sectioned cited article, and a deterministic citation audit.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

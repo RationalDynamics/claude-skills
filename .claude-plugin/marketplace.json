@@ -1,0 +1,111 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "devo-skills",
+  "description": "Shared catalog of Claude Code / Cowork Agent Skills for the devo team. Each skill is an independently installable peer plugin — install only the ones you want, and add your own by dropping a folder in plugins/ and an entry here.",
+  "owner": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "plugins": [
+    {
+      "name": "breakpoint",
+      "source": "./plugins/breakpoint",
+      "description": "Insert /breakpoint context-checkpoint markers that divide a session into logical blocks so /neuralize can later evict irrelevant context. Slash-invoked only (model auto-invocation disabled).",
+      "category": "context",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "neuralize",
+      "source": "./plugins/neuralize",
+      "description": "Selectively evict irrelevant context blocks and reload only what matters (/neuralize) — the surgical alternative to clearing a whole session. Pairs with breakpoint. Slash-invoked only.",
+      "category": "context",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "grill-me",
+      "source": "./plugins/grill-me",
+      "description": "Interview the user relentlessly about a plan or design, resolving each branch of the decision tree until shared understanding. Use to stress-test a plan.",
+      "category": "productivity",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "tdd",
+      "source": "./plugins/tdd",
+      "description": "Test-driven development with a red-green-refactor loop, plus references on deep modules, interface design, mocking, and refactoring.",
+      "category": "development",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "esoteric-elucidation",
+      "source": "./plugins/esoteric-elucidation",
+      "description": "Explain unfamiliar code, systems, or domains by orienting in plain English, scoping blast radius, and walking concrete data flows before diving into implementation detail. Repo-agnostic.",
+      "category": "development",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "the-orchestrator",
+      "source": "./plugins/the-orchestrator",
+      "description": "Decompose a design doc into a parallelizable DAG of tasks and run them across git worktrees with an interactive visual workflow. Repo-agnostic.",
+      "category": "orchestration",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "storm-research",
+      "source": "./plugins/storm-research",
+      "description": "Perspective-driven, outline-first long-form research (Stanford STORM): multi-perspective research conversations, an evidence-grounded outline, a sectioned cited article, and a deterministic citation audit.",
+      "category": "research",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "costorm-session",
+      "source": "./plugins/costorm-session",
+      "description": "Interactive, human-in-the-loop Co-STORM research: a steerable, turn-based discourse among LLM experts and a moderator over web sources, growing a shared mind map, then synthesizing a cited report. Resumable.",
+      "category": "research",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "camera-lens-travel-eval",
+      "source": "./plugins/camera-lens-travel-eval",
+      "description": "Worked-example eval skill: grades a candidate answer to a camera travel-gear question with a 100-point rubric, gold-fact baseline, line-grounded evidence, and critical-error score caps. A template for rigorous, auditable evals.",
+      "category": "evals",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    },
+    {
+      "name": "scaffold-agent-team",
+      "source": "./plugins/scaffold-agent-team",
+      "description": "Scaffold a repo-coupled multi-agent team (lead / architect / backend / qa / devops) tuned to a target repo's conventions — emits project-local agents, slash commands, and a coordination protocol, then adversarially verifies the generated claims.",
+      "category": "development",
+      "author": {
+        "name": "chrisvandermey",
+        "email": "chris@rationaldynamics.ai"
+      }
+    }
+  ]
+}
