@@ -1,0 +1,9 @@
+{
+  "name": "esoteric-elucidation",
+  "description": "Explain unfamiliar code, systems, or domains by orienting in plain English, scoping blast radius, and walking concrete data flows before diving into implementation detail. Repo-agnostic.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

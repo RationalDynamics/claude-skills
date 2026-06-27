@@ -1,0 +1,9 @@
+{
+  "name": "neuralize",
+  "description": "Selectively evict irrelevant context blocks and reload only what matters (/neuralize) — the surgical alternative to clearing a whole session. Pairs with breakpoint. Slash-invoked only.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "camera-lens-travel-eval",
+  "description": "Worked-example eval skill: grades a candidate answer to a camera travel-gear question with a 100-point rubric, gold-fact baseline, line-grounded evidence, and critical-error score caps. A template for rigorous, auditable evals.",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

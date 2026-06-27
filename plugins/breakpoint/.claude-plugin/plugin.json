@@ -1,0 +1,9 @@
+{
+  "name": "breakpoint",
+  "description": "Insert /breakpoint context-checkpoint markers that divide a session into logical blocks so /neuralize can later evict irrelevant context. Slash-invoked only (model auto-invocation disabled).",
+  "version": "0.1.0",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  }
+}

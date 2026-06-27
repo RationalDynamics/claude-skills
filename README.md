@@ -1,64 +1,87 @@
-# claude-skills
+# devo-skills
 
-A small collection of [Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
-for Claude Code / Cowork. Each skill is a self-contained folder with a `SKILL.md`
-(YAML frontmatter + instructions) and optional `references/` (progressively-loaded
-detail) and `scripts/` (deterministic helpers).
+A shared **plugin marketplace** of [Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+for Claude Code / Cowork. Each skill is packaged as its own **peer plugin**, so you
+install only the ones you want — and the team can add their own by dropping a folder
+in `plugins/` and one entry in the catalog.
+
+## Use it
+
+Add the marketplace once, then install the plugins you want:
+
+```sh
+# point at this checkout (local), or a git URL once it's pushed
+/plugin marketplace add /Users/chris/devo/skills
+# /plugin marketplace add https://github.com/RationalDynamics/claude-skills
+
+# install à la carte — each skill is independent
+/plugin install storm-research@devo-skills      # à la carte
+/plugin install breakpoint@devo-skills
+```
+
+Pull in new/updated skills later with `/plugin marketplace update devo-skills`, then
+`/plugin install <name>@devo-skills`. (The `/plugin` commands run from an interactive
+`claude` terminal session.)
+
+> Skills load at session start, so start a fresh session after installing.
 
 ## Skills
 
-### [`storm-research`](storm-research/SKILL.md)
-One-shot, perspective-driven long-form research that reimplements Stanford OVAL's
-[STORM](https://github.com/stanford-oval/storm) method: discover several expert
-perspectives → run a simulated research conversation per perspective → build an
-evidence-grounded outline → draft a Wikipedia-style article section by section with
-inline citations → polish → a deterministic citation audit
-([`audit_citations.py`](storm-research/scripts/audit_citations.py)). It fans out
-parallel research subagents and writes staged artifacts (brief, perspectives,
-evidence, outline, report, sources, audit). A native alternative to "deep research"
-for broad, balanced, sectioned topics.
+**Research**
+- [`storm-research`](plugins/storm-research/skills/storm-research/SKILL.md) — one-shot, perspective-driven long-form research (Stanford STORM): discover perspectives → simulated research conversations → evidence-grounded outline → sectioned cited article → deterministic citation audit.
+- [`costorm-session`](plugins/costorm-session/skills/costorm-session/SKILL.md) — interactive, human-in-the-loop Co-STORM: a steerable turn-based discourse among LLM experts + a moderator over web sources, growing a shared mind map, then a cited report. Resumable.
 
-### [`costorm-session`](costorm-session/SKILL.md)
-Interactive, human-in-the-loop reimplementation of Co-STORM: a steerable, turn-based
-discourse among LLM expert agents and a moderator while you observe and steer, growing
-a shared dynamic mind map turn by turn, then synthesizing a cited report from it. The
-session state is model-managed JSON that persists to disk, so a session can be resumed.
+**Context management** *(slash-invoked only — `disable-model-invocation`)*
+- [`breakpoint`](plugins/breakpoint/skills/breakpoint/SKILL.md) — insert `/breakpoint` markers that divide a session into logical blocks.
+- [`neuralize`](plugins/neuralize/skills/neuralize/SKILL.md) — `/neuralize` selectively evicts irrelevant blocks and reloads only what matters; the surgical alternative to clearing a whole session. Pairs with `breakpoint`.
 
-### [`camera-lens-travel-eval`](camera-lens-travel-eval/SKILL.md)
-A worked-example eval skill. It grades a candidate model answer to a specific
-travel-lens question (Sony a7R VI/V vs Leica M10 kits) using a 100-point rubric, a
-gold-fact baseline, line-grounded evidence selection, and score caps for critical
-errors. Useful as a template for building rigorous, auditable evals.
+**Development workflow**
+- [`tdd`](plugins/tdd/skills/tdd/SKILL.md) — red-green-refactor TDD loop, with references on deep modules, interface design, mocking, and refactoring.
+- [`the-orchestrator`](plugins/the-orchestrator/skills/the-orchestrator/SKILL.md) — decompose a design doc into a parallelizable DAG of tasks and run them across git worktrees with an interactive visual workflow.
+- [`esoteric-elucidation`](plugins/esoteric-elucidation/skills/esoteric-elucidation/SKILL.md) — explain unfamiliar code/systems in plain English, scoping blast radius and walking data flows before implementation detail.
+- [`scaffold-agent-team`](plugins/scaffold-agent-team/skills/scaffold-agent-team/SKILL.md) — scaffold a repo-coupled multi-agent team (lead/architect/backend/qa/devops) tuned to a target repo's conventions. The recipe behind the scry-team and dis-team.
+- [`grill-me`](plugins/grill-me/skills/grill-me/SKILL.md) — interview the user relentlessly about a plan or design, resolving each branch of the decision tree until shared understanding.
 
-### [`scaffold-agent-team`](scaffold-agent-team/SKILL.md)
-Stands up a **repo-coupled multi-agent team** for a target repository: it reads the
-repo's conventions (stack, test/type gates, migration workflow, deploy discipline,
-hard invariants) and emits customized, project-local Claude Code agents
-(lead/architect/backend/test/devops, adapted per repo), slash commands, and a
-coordination protocol — then adversarially verifies the generated claims against the
-repo. The generalized recipe behind the scry-team (scry-api) and dis-team (rd-dis).
-Unlike the other skills here, its output is version-controlled config that lives **in
-the target repo**, not a portable artifact.
+**Evals**
+- [`camera-lens-travel-eval`](plugins/camera-lens-travel-eval/skills/camera-lens-travel-eval/SKILL.md) — worked-example eval: grades a candidate answer with a 100-point rubric, gold-fact baseline, line-grounded evidence, and critical-error caps. A template for rigorous, auditable evals.
 
-## Install
+## Add your own skill
 
-Claude Code discovers skills from `~/.claude/skills/<name>/` (personal, available in
-every project) or `<project>/.claude/skills/<name>/` (project-local). Symlink (keeps a
-single editable copy) or copy the folders:
-
-```sh
-# personal install
-ln -s "$PWD/storm-research"          ~/.claude/skills/storm-research
-ln -s "$PWD/costorm-session"         ~/.claude/skills/costorm-session
-ln -s "$PWD/camera-lens-travel-eval" ~/.claude/skills/camera-lens-travel-eval
-ln -s "$PWD/scaffold-agent-team"     ~/.claude/skills/scaffold-agent-team
-```
+1. **Create the skill** at `plugins/<name>/skills/<name>/SKILL.md` (plus optional
+   `references/`, `scripts/`, `assets/`). The `SKILL.md` frontmatter needs at least
+   `name` and `description`.
+2. **Add a plugin manifest** at `plugins/<name>/.claude-plugin/plugin.json`:
+   ```json
+   {
+     "name": "<name>",
+     "description": "One-line catalog summary shown in /plugin.",
+     "version": "0.1.0",
+     "author": { "name": "you", "email": "you@example.com" }
+   }
+   ```
+3. **Register it** in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
+   by appending an entry to `plugins[]`:
+   ```json
+   { "name": "<name>", "source": "./plugins/<name>", "description": "…", "category": "…" }
+   ```
+4. **Open a PR.** After merge, teammates run `/plugin marketplace update devo-skills`
+   then `/plugin install <name>@devo-skills`.
 
 ## Layout
 
 ```
-<skill>/
-  SKILL.md          # frontmatter (name, description) + instructions
-  references/*.md   # detail loaded on demand
-  scripts/*         # optional deterministic helpers
+.claude-plugin/
+  marketplace.json          # the catalog: lists every plugin
+plugins/<name>/
+  .claude-plugin/
+    plugin.json             # plugin manifest (name, description, version, author)
+  skills/<name>/
+    SKILL.md                # frontmatter (name, description) + instructions
+    references/*.md         # detail loaded on demand
+    scripts/*               # optional deterministic helpers
 ```
+
+> **Local dev shortcut:** instead of installing via the marketplace you can symlink a
+> single skill into `~/.claude/skills/`, e.g.
+> `ln -s "$PWD/plugins/tdd/skills/tdd" ~/.claude/skills/tdd`. Use one mechanism or the
+> other per skill — don't both symlink *and* install the same skill, or it loads twice.
