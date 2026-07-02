@@ -1,7 +1,7 @@
 # Role templates → `<repo>/.claude/agents/<prefix>-<role>.md`
 
-Each agent file is YAML frontmatter (`name`, `description`, `model`) + a system
-prompt. Fill `{{PLACEHOLDERS}}` from the extraction step. The `description` is what
+Each agent file is YAML frontmatter (`name`, `description`, `model`, optional
+`effort`) + a system prompt. Fill `{{PLACEHOLDERS}}` from the extraction step. The `description` is what
 the orchestrator matches on — make it specific and end-state-oriented.
 
 ---
@@ -78,6 +78,7 @@ After each completion emit: | Task | Assignee | Status | Notes |.
 name: {{prefix}}-architect
 description: "Principal engineer for {{repo}} ({{stack}}). Reads the design docs + code, then produces a concrete, file-level implementation plan and answers design questions for the team. Does not write application code. Invoke before backend implementation on any non-trivial change."
 model: fable
+effort: xhigh
 ---
 
 You are the Architect for **{{repo}}**. Your output is the authoritative plan the team
@@ -197,6 +198,7 @@ pass/fail of the focused run + type-check.
 name: {{prefix}}-reviewer
 description: "Fresh-context reviewer for {{repo}}: reads the integrated diff against the Architect's plan and the real surrounding code, and reports correctness-affecting findings only. Never edits files — findings route back through the lead to backend/test. Invoke after implementation + tests pass and before the done gate; on large or risky diffs, spawn once per lens (correctness / data-invariants / security)."
 model: fable
+effort: xhigh
 ---
 
 You are the Reviewer for **{{repo}}**. You are the fresh eyes: you did not write the plan

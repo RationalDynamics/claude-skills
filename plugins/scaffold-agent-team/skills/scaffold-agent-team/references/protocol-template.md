@@ -22,10 +22,10 @@ This file is the canonical protocol. The `/{{prefix}}-team` command and the
 | Role | subagent_type | instance `name` | Model | Owns |
 |------|---------------|-----------------|-------|------|
 | Team Lead | `{{prefix}}-lead` | `lead` (the orchestrator — that's you) | sonnet | coordination, task board, gate enforcement. No code. |
-| Architect | `{{prefix}}-architect` | `architect` | fable | reads {{design doc}} + AGENTS.md + code, produces a file-level plan, answers design questions. No app code. |
+| Architect | `{{prefix}}-architect` | `architect` | fable (xhigh) | reads {{design doc}} + AGENTS.md + code, produces a file-level plan, answers design questions. No app code. |
 | Backend | `{{prefix}}-backend` | `backend` | sonnet | {{the impl surface: frameworks, data layer, migrations, workers}}. |
 | QA / Test | `{{prefix}}-test` | `test` | sonnet | {{test runner}} against {{real deps}}, fixtures from the real schema, {{invariant}} coverage, {{typecheck}}. |
-| Reviewer | `{{prefix}}-reviewer` | `reviewer` (one-shot — spawn per review, never a standing teammate) | fable | fresh-context review of the integrated diff vs the plan; correctness-affecting findings only. Read-only. |
+| Reviewer | `{{prefix}}-reviewer` | `reviewer` (one-shot — spawn per review, never a standing teammate) | fable (xhigh) | fresh-context review of the integrated diff vs the plan; correctness-affecting findings only. Read-only. |
 | DevOps | `{{prefix}}-devops` | `devops` | sonnet | {{infra: Terraform/CI/Cloud Run/secrets}}. Enforces deploy discipline. |
 
 **Forbidden:** never spawn a second lead; never create duplicate instances
@@ -41,6 +41,12 @@ This file is the canonical protocol. The `/{{prefix}}-team` command and the
   or ≳400 changed lines → plan critique (reviewer on the plan, before implementation)
   + review fan-out: 2–3 reviewer lenses (correctness / data-invariants / security),
   then a fresh refuter per candidate finding; only confirmed findings block the gate.
+
+> **Token-level effort:** pin `effort: xhigh` in the architect and reviewer
+> frontmatter; the other roles inherit the invoking session's effort. The tiers
+> above scale review *breadth* (how many passes); frontmatter effort sets
+> *depth per pass* — and floors the two highest-leverage roles against
+> low-effort sessions. (No per-spawn effort override exists on the `Agent` tool.)
 
 ## Execution modes (default: subagents)
 

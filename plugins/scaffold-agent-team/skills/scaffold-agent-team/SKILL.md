@@ -88,7 +88,9 @@ Adapt: add `frontend` if the repo ships a UI; **drop `devops`** if there's no
 infra/Terraform/CI to own; rename `backend`→`engineer` for non-web stacks. Keep
 `reviewer` — it's the completeness gate, and as a one-shot end-of-pipeline spawn its
 cost is bounded. Default models: orchestration/impl/test/devops = sonnet,
-deep-reasoning (architect, reviewer) = fable — state them and let the user override.
+deep-reasoning (architect, reviewer) = fable, with `effort: xhigh` pinned in the
+architect + reviewer frontmatter (other roles inherit the invoking session's
+effort) — state them and let the user override.
 
 **4 — Generate the protocol doc** (`docs/agent-team.md`) from
 `references/protocol-template.md`, filling every `{{PLACEHOLDER}}` from step 2.

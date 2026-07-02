@@ -134,10 +134,10 @@ description: Show the {{repo}} agent team roster and what each member is current
 | Role | subagent_type | Instance | Model | Current task | Status |
 |------|---------------|----------|-------|--------------|--------|
 | Team Lead | `{{prefix}}-lead` | `lead` | sonnet | | |
-| Architect | `{{prefix}}-architect` | `architect` | fable | | |
+| Architect | `{{prefix}}-architect` | `architect` | fable (xhigh) | | |
 | Backend | `{{prefix}}-backend` | `backend` | sonnet | | |
 | QA / Test | `{{prefix}}-test` | `test` | sonnet | | |
-| Reviewer | `{{prefix}}-reviewer` | `reviewer` (one-shot) | fable | | |
+| Reviewer | `{{prefix}}-reviewer` | `reviewer` (one-shot) | fable (xhigh) | | |
 | DevOps | `{{prefix}}-devops` | `devops` | sonnet | | |
 
 (Only show roles actually spawned.) Populate from `TaskList`, `git diff --stat HEAD`,

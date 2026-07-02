@@ -11,6 +11,7 @@ resolve for a real repo, and how the roster/gates/deploy-rules differ by stack.
 | `{{stack}}` | Django 6 / DRF + drf-spectacular, Celery + Redis, Postgres 16, LangGraph over OpenAI+Anthropic | FastAPI + Pydantic v2, SQLAlchemy 2.0 / asyncpg, Alembic, Cloud Tasks + Cloud Scheduler |
 | deploy target | GCP Cloud Run | GCP Cloud Run |
 | roster | lead, architect, backend, qa, reviewer (one-shot), devops (no frontend — separate repo) | lead, architect, backend, **test**, reviewer (one-shot), devops |
+| effort pinning | architect + reviewer `effort: xhigh` (frontmatter); other roles inherit the invoking session | same |
 | `{{TEST_CMD}}` | `./command.sh test` (full) / `./command.sh test tests/path.py -q` (focused) — never `./command.sh pytest -q` | `./command.sh test` (full, real Postgres + live EDGAR) / `./command.sh test tests/path.py -q` (focused) |
 | `{{TYPECHECK_CMD}}` | (part of the suite) | `./command.sh check` (mypy strict) |
 | escape hatches | `SCRY_COMPOSE_ISOLATED=1` for `manage` in a worktree | `./command.sh pytest-host` (no infra), `DIS_SKIP_INTERNET=1` (skip live SEC); **no** isolation flag |
