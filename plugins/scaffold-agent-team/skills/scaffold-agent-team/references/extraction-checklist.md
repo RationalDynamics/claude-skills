@@ -29,6 +29,9 @@ Dockerfile, and the `docs/`/`terraform/` layout. Quote rules verbatim where they
 - `frontend`: add if the repo ships a UI surface distinct from the backend.
 - Rename `backend`→`engineer`/`core` for non-web stacks (CLI, library, data pipeline).
 - Models: orchestration/impl/test/devops = sonnet; deep-reasoning (architect, reviewer) = fable. State them; let the user override.
+- Effort: pin `effort: xhigh` in the architect + reviewer frontmatter (sets depth-per-pass
+  and floors them against low-effort sessions); other roles inherit the invoking session's
+  effort. No per-spawn effort override exists on the `Agent` tool.
 
 ## Naming collision rule
 
