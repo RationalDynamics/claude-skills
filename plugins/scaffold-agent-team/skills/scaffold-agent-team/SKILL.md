@@ -52,7 +52,10 @@ controlled, not in a central/portable skills library. Default output (project-lo
 it ships with the repo, is reviewed in PRs, and stays in sync with the code it
 drives. Mirror to `~/.claude/{agents,commands}/` only if the user wants the team
 available from any cwd (rarely needed for a repo-specific team — you're in the repo
-when you use it). The legacy scry-team lives global-only/uncommitted; don't repeat that.
+when you use it), and **never maintain both copies**: project-level agents shadow
+user-level ones on name collision, so duplicates silently diverge. (This bit the
+scry-team — the repo copy landed and the upgrades kept going to the globals until
+the globals were removed. One home per team.)
 
 ## Procedure
 

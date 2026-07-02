@@ -23,13 +23,17 @@ resolve for a real repo, and how the roster/gates/deploy-rules differ by stack.
 | pre-commit hook | full pytest suite; never `--no-verify` | `./command.sh check` + `./command.sh test` + `terraform fmt -check`; never `--no-verify` without per-commit auth |
 | `{{LINEAR_PREFIX}}` | per scry-api convention | `DEM` (Demo Team); branch `<author>/dem-NNN-desc`; PR `[DEM-NNN] Desc`; squash |
 | design doc | the relevant `docs/<area>.md` | `scry-api/docs/dis_lld.md` (lives in a sibling repo — a legit cross-repo ref) |
-| install location | global `~/.claude/` (legacy — uncommitted; **don't repeat this**) | **project-local**, committed to rd-dis (recommended) |
+| install location | **project-local**, committed to scry-api (scry-api#317; the legacy `~/.claude` copies were removed after they diverged — scry-api#326) | **project-local**, committed to rd-dis |
 | naming note | — | test agent is `dis-test`, not `dis-qa` — a `dis-qa` *skill* already exists for post-deploy observational QA |
 
 ## Key lessons these encode
 
-- **Project-local beats global.** scry-team lives only in `~/.claude` (unversioned,
-  invisible to teammates). dis-team ships in the repo. Default new teams to project-local.
+- **Project-local beats global — and never keep both.** Both teams now ship in their
+  repos. scry-team started global-only in `~/.claude`; once a repo copy landed
+  (scry-api#317) the two silently diverged, and project-level agents *shadow*
+  user-level ones on name collision — so in-repo sessions ran the stale copy while
+  the upgrades went to the globals. Fixed by making the repo canonical and deleting
+  the globals (scry-api#326). One home per team, always.
 - **Deploy discipline is the highest-stakes customization.** scry's three-tier
   promotion and dis's "never `terraform apply`/`publish.sh`" are different rules for
   different repos — get this exactly right; it's the difference between a safe and a
@@ -42,5 +46,5 @@ resolve for a real repo, and how the roster/gates/deploy-rules differ by stack.
 
 ## Reading the live instances
 
-- scry-team: `~/.claude/agents/scry-*.md`, `~/.claude/commands/{scry-team,team-status,project-status,check-agent-progress,recover-stuck-agent}.md`, `~/.claude/rules/scry-team-structure.md`.
+- scry-team: `scry-api/.claude/agents/scry-*.md`, `scry-api/.claude/commands/{scry-team,team-status,project-status,check-agent-progress,recover-stuck-agent}.md`, `scry-api/docs/agent-team.md`, and the "Agent team (opt-in)" section of `scry-api/AGENTS.md`.
 - dis-team: `rd-dis/.claude/agents/dis-*.md`, `rd-dis/.claude/commands/dis-*.md`, `rd-dis/docs/agent-team.md`, and the "Agent team (opt-in)" section of `rd-dis/AGENTS.md`.
