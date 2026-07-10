@@ -23,6 +23,29 @@ Pull in new/updated skills later with `/plugin marketplace update devo-skills`, 
 `/plugin install <name>@devo-skills`. (The `/plugin` commands run from an interactive
 `claude` terminal session.)
 
+### Install everything
+
+Want all of them? From a checkout, run the bundled script — it reads the plugin
+list from the catalog (so it never drifts) and installs each one:
+
+```sh
+./install-all.sh
+# or point it at a local checkout instead of GitHub:
+# ./install-all.sh /path/to/claude-skills
+```
+
+If you'd rather not clone, add the marketplace once and loop over the names
+(a plain shell one-liner, run outside the interactive `/plugin` prompt):
+
+```sh
+claude plugin marketplace add https://github.com/RationalDynamics/claude-skills
+for p in breakpoint neuralize grill-me tdd esoteric-elucidation the-orchestrator \
+         storm-research costorm-session camera-lens-travel-eval scaffold-agent-team \
+         session-cost; do
+  claude plugin install "$p@devo-skills"
+done
+```
+
 > Skills load at session start, so start a fresh session after installing.
 
 ## Skills
