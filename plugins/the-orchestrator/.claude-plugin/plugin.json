@@ -1,7 +1,7 @@
 {
   "name": "the-orchestrator",
   "description": "Decompose a design doc into a parallelizable DAG of tasks and run them across git worktrees with an interactive visual workflow. Repo-agnostic.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "chrisvandermey",
     "email": "chris@rationaldynamics.ai"

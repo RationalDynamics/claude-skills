@@ -262,8 +262,33 @@ This starts a local HTTP server that:
 - Exposes `GET /api/state` for the viewer to poll node statuses
 - Exposes `POST /api/state/<node-id>` for programmatic status updates
 - Exposes `POST /api/unlock-next-level` to trigger level transitions
+- Exposes `POST /api/attention/<node-id>` for sessions to report when they are
+  blocked waiting on the user (see "Attention notifications" below)
 
 Tell the user: "The orchestrator viewer is running at http://localhost:5000. Click any red node at level 0 to launch a terminal with the node's context loaded."
+
+## Attention notifications
+
+When a node's session is **blocked waiting on you** — a permission prompt, an
+`agent_needs_input` request, or an idle wait — a **blinking red dot** appears on
+that node's upper-right corner in the viewer (and a "N need input" badge appears in
+the header). The dot clears as soon as you respond, or when the session stops/ends.
+
+How it works:
+- On launch, each node session gets **session-scoped Claude Code hooks** written to
+  `.claude/settings.local.json` in its worktree (only if none exists — a real config
+  is never clobbered):
+  - `Notification` (matcher `permission_prompt|idle_prompt|agent_needs_input`) →
+    `POST /api/attention/<node-id> {"state":"needs_input"}`
+  - `UserPromptSubmit`, `Stop`, `SessionEnd` → `{"state":"clear"}`
+- These call `scripts/attention_hook.sh`, which POSTs the state to the server.
+- `GET /api/state` reports a per-node `attention` boolean, **gated on the node still
+  being `locked`** (a live heartbeat) so a dead session never leaves a stuck dot.
+- Attention markers live in `active/<node-id>.attention` (mirroring heartbeat files)
+  and are purged at each level transition.
+
+This requires Claude Code's hooks (present in normal `claude` sessions); it degrades
+gracefully — if a hook can't reach the server, the session is unaffected.
 
 ## Level Transition Protocol
 

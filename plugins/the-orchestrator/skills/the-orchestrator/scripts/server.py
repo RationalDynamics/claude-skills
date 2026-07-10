@@ -55,6 +55,9 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
         if parsed.path.startswith("/api/heartbeat/"):
             node_id = parsed.path.split("/api/heartbeat/")[1]
             self._heartbeat_node(node_id)
+        elif parsed.path.startswith("/api/attention/"):
+            node_id = parsed.path.split("/api/attention/")[1]
+            self._attention_node(node_id)
         elif parsed.path.startswith("/api/state/"):
             node_id = parsed.path.split("/api/state/")[1]
             self._update_node_state(node_id)
@@ -85,6 +88,40 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
         heartbeat_file = active_dir / f"{node_id}.heartbeat"
         heartbeat_file.write_text(datetime.now(timezone.utc).isoformat())
         self._send_json({"ok": True})
+
+    def _attention_node(self, node_id):
+        """Set or clear a node's 'needs input' marker.
+
+        Body: {"state": "needs_input" | "clear"}. Driven by each session's
+        Claude Code hooks (Notification -> needs_input; UserPromptSubmit / Stop /
+        SessionEnd -> clear). Mirrors the heartbeat-file pattern (a marker file in
+        active/) so it never races with state.json writes.
+        """
+        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(content_length)) if content_length else {}
+        except (json.JSONDecodeError, ValueError):
+            body = {}
+        want = str(body.get("state", "needs_input"))
+        active_dir = self.server.orchestrator_dir / "active"
+        active_dir.mkdir(exist_ok=True)
+        marker = active_dir / f"{node_id}.attention"
+        if want == "needs_input":
+            marker.write_text(datetime.now(timezone.utc).isoformat())
+        else:
+            marker.unlink(missing_ok=True)
+        self._send_json({"ok": True, "node": node_id, "attention": want == "needs_input"})
+
+    def _node_needs_attention(self, node_id):
+        """True iff the node has a 'needs input' marker AND is still locked (alive).
+
+        Gating on the heartbeat means a session that dies without clearing never
+        leaves a stuck dot in the viewer.
+        """
+        marker = self.server.orchestrator_dir / "active" / f"{node_id}.attention"
+        if not marker.exists():
+            return False
+        return self._is_node_locked(node_id)
 
     def _is_node_locked(self, node_id):
         """Check if a node has a fresh heartbeat (< 10s old)."""
@@ -514,9 +551,10 @@ claude --permission-mode plan "$(cat '{prompt_file}')"
 
     def _serve_state(self):
         state = self._read_json("state.json")
-        # Compute locked status on-the-fly from heartbeat files
+        # Compute locked + attention status on-the-fly from marker files
         for node_id in state.get("nodes", {}):
             state["nodes"][node_id]["locked"] = self._is_node_locked(node_id)
+            state["nodes"][node_id]["attention"] = self._node_needs_attention(node_id)
         state["patch_locked"] = self._is_node_locked("__patch__")
         # Add verification fields (backwards compatible defaults)
         state.setdefault("verify_enabled", False)
@@ -631,6 +669,8 @@ claude --permission-mode plan "$(cat '{prompt_file}')"
         active_dir = orch_dir / "active"
         if active_dir.exists():
             for f in active_dir.glob("*.heartbeat"):
+                f.unlink()
+            for f in active_dir.glob("*.attention"):
                 f.unlink()
 
         addendums_dir = orch_dir / "addendums"
@@ -998,6 +1038,44 @@ Output ALL nodes now, each wrapped in ===NODE:<node-id>=== ... ===END_NODE=== de
         if missing:
             raise RuntimeError(f"Context generation missing nodes: {missing}")
 
+    def _attention_hooks_setup(self, node_id):
+        """Bash snippet (run inside the session's worktree) that installs
+        session-scoped Claude Code hooks reporting this node's 'needs input' state.
+
+        - Notification (permission_prompt|idle_prompt|agent_needs_input) -> needs_input
+        - UserPromptSubmit / Stop / SessionEnd -> clear
+        Written into the worktree's .claude/settings.local.json by the launch script
+        AFTER `git worktree add` (writing it beforehand would make the target
+        non-empty and break worktree creation), and only if none exists yet so a
+        real config is never clobbered.
+        """
+        port = self.server.server_address[1]
+        hook = Path(__file__).resolve().parent / "attention_hook.sh"
+
+        def cmd(state):
+            return {"type": "command", "command": f'"{hook}" {port} {node_id} {state}'}
+
+        settings = {
+            "hooks": {
+                "Notification": [{
+                    "matcher": "permission_prompt|idle_prompt|agent_needs_input",
+                    "hooks": [cmd("needs_input")],
+                }],
+                "UserPromptSubmit": [{"hooks": [cmd("clear")]}],
+                "Stop": [{"hooks": [cmd("clear")]}],
+                "SessionEnd": [{"hooks": [cmd("clear")]}],
+            }
+        }
+        settings_json = json.dumps(settings, indent=2)
+        return (
+            'mkdir -p .claude\n'
+            'if [ ! -f .claude/settings.local.json ]; then\n'
+            "cat > .claude/settings.local.json <<'ORCH_HOOKS_EOF'\n"
+            f"{settings_json}\n"
+            "ORCH_HOOKS_EOF\n"
+            'fi'
+        )
+
     def _launch_node(self, node_id):
         """Launch a terminal session for a node."""
         graph = self._read_json("graph.json")
@@ -1039,6 +1117,9 @@ Output ALL nodes now, each wrapped in ===NODE:<node-id>=== ... ===END_NODE=== de
             commands.append(f'git worktree add ".worktrees/{node_id}" -b "{branch_name}"')
 
         commands.append(f'cd "{worktree_dir}"')
+
+        # Install session-scoped attention hooks in the worktree (post-worktree-add).
+        commands.append(self._attention_hooks_setup(node_id))
 
         # Update state
         node_state["status"] = "red"

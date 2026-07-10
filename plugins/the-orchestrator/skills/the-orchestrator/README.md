@@ -54,6 +54,12 @@ Open the viewer at `localhost:5000`. Click red nodes to launch terminal sessions
 
 When all nodes at a level are green, unlock the next level and repeat.
 
+**Attention dots:** when a session is blocked waiting on you (a permission prompt or
+a question), a **blinking red dot** appears on that node's upper-right corner (and a
+"N need input" badge in the header), so you can tell at a glance which session needs
+you. It clears when you respond or the session ends. This is driven by session-scoped
+Claude Code hooks — see [Attention notifications](skills/the-orchestrator/SKILL.md#attention-notifications) in the SKILL.
+
 ## Installation
 
 Copy or symlink the `the-orchestrator/` directory into `~/.claude/skills/`.
@@ -226,11 +232,12 @@ The viewer server exposes these endpoints:
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/` | Viewer HTML |
-| GET | `/api/state` | Node statuses + lock state + transition status |
+| GET | `/api/state` | Node statuses + lock state + attention + transition status |
 | GET | `/api/graph` | DAG structure |
 | GET | `/api/queue` | Pending feature requests |
 | POST | `/api/launch/<id>` | Launch node terminal in worktree |
 | POST | `/api/heartbeat/<id>` | Session heartbeat (called by terminal loop) |
+| POST | `/api/attention/<id>` | Report "needs input" state (called by session hooks) |
 | POST | `/api/state/<id>` | Update node status |
 | POST | `/api/unlock-next-level` | Trigger level transition |
 | POST | `/api/add-feature` | Launch feature spec terminal |

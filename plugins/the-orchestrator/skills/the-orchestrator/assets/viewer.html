@@ -281,6 +281,23 @@
     animation: pulse 2s ease-in-out infinite;
   }
 
+  /* "Needs input" attention dot — blinks at a node's upper-right corner. */
+  .attention-dot {
+    fill: #ff3b30;
+    stroke: #fff;
+    stroke-width: 1.5;
+    pointer-events: none;
+    animation: attention-blink 1s ease-in-out infinite;
+  }
+  @keyframes attention-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.2; }
+  }
+  .badge-attention {
+    background: #ff3b30;
+    color: #fff;
+  }
+
   .sidebar {
     position: fixed;
     left: 0;
@@ -814,6 +831,16 @@ function renderDAG() {
         .attr('fill', '#d29922')
         .text('TEAM');
     }
+
+    // "Needs input" attention dot (upper-right corner) — hidden until a session
+    // reports it is waiting on the user. Appended last so it renders on top.
+    const attnDot = group.append('circle')
+      .attr('class', 'attention-dot')
+      .attr('cx', NODE_W - 9)
+      .attr('cy', 9)
+      .attr('r', 5)
+      .style('display', 'none');
+    attnDot.append('title').text('Waiting for your input');
   }
 
   // Center the graph
@@ -831,7 +858,7 @@ function updateState(newState) {
   const currentLevel = state.current_level || 0;
   document.getElementById('level-indicator').textContent = `Level ${currentLevel}`;
 
-  let red = 0, blue = 0, green = 0;
+  let red = 0, blue = 0, green = 0, attention = 0;
 
   for (const [nodeId, ns] of Object.entries(state.nodes)) {
     const status = ns.status || 'red';
@@ -849,6 +876,11 @@ function updateState(newState) {
     rect.classed('status-blue', status === 'blue' && !locked);
     rect.classed('status-locked', locked);
 
+    // "Needs input" attention dot — show iff the session reports it is waiting.
+    const needsInput = ns.attention === true;
+    if (needsInput) attention++;
+    group.select('.attention-dot').style('display', needsInput ? null : 'none');
+
     // Determine if node is clickable
     const node = findNode(nodeId);
     const isCurrentLevel = node && node.level <= currentLevel;
@@ -860,7 +892,8 @@ function updateState(newState) {
   document.getElementById('node-counts').innerHTML =
     `<span class="badge badge-red">${red} pending</span>` +
     `<span class="badge badge-blue">${blue} done</span>` +
-    `<span class="badge badge-green">${green} merged</span>`;
+    `<span class="badge badge-green">${green} merged</span>` +
+    (attention > 0 ? `<span class="badge badge-attention">${attention} need input</span>` : '');
 
   // Transition status handling
   const transStatus = state.transition_status || null;
