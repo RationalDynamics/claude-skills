@@ -1,0 +1,20 @@
+{
+  "name": "grill-me",
+  "version": "0.2.0",
+  "description": "Interview the user relentlessly about a plan or design, resolving each branch of the decision tree until shared understanding. Use to stress-test a plan.",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Grill Me",
+    "shortDescription": "Stress-test plans through focused questioning",
+    "longDescription": "Interrogate a plan one decision at a time, exploring discoverable context and resolving dependencies until the design is decision-complete.",
+    "developerName": "Rational Dynamics",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Planning"],
+    "defaultPrompt": ["Grill me on this plan until every decision is resolved."]
+  }
+}

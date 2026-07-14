@@ -1,0 +1,20 @@
+{
+  "name": "esoteric-elucidation",
+  "version": "0.2.0",
+  "description": "Explain unfamiliar code, systems, or domains by orienting in plain English, scoping blast radius, and walking concrete data flows before diving into implementation detail. Repo-agnostic.",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Esoteric Elucidation",
+    "shortDescription": "Explain unfamiliar systems with clear context",
+    "longDescription": "Orient engineers in unfamiliar codebases with plain-English context, blast-radius analysis, and concrete execution flows.",
+    "developerName": "Rational Dynamics",
+    "category": "Development",
+    "capabilities": ["Read", "Analyze"],
+    "defaultPrompt": ["Explain this unfamiliar codebase or system."]
+  }
+}

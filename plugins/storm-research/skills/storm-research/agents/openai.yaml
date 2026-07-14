@@ -1,0 +1,6 @@
+interface:
+  display_name: "STORM Research"
+  short_description: "Build multi-perspective, citation-audited reports"
+  default_prompt: "Use $storm-research to research this topic from multiple perspectives and produce an audited, cited report."
+policy:
+  allow_implicit_invocation: true

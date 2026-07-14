@@ -52,11 +52,11 @@ moderator's best new question falls below a novelty floor (~0.3) while coverage 
 
 ## Spawn vs simulate
 
-Spawn an `Agent` subagent for a role when you want genuine independence and parallel web research —
-e.g. several experts in one turn (issue the Agent calls in a single message to run them
-concurrently). Simulate a role inline (you play it, using WebSearch/WebFetch yourself) in `observe`
-mode or low-budget sessions where the overhead of a subagent isn't worth it. Either way the output
-must match the JSON shapes below so it folds cleanly into `session_state.json`.
+Spawn a native subagent for a role when the host provides that capability and genuine independence
+or parallel web research is valuable. Run independent experts concurrently up to the host's limit.
+Simulate a role inline using the available live web-search and page-fetch capabilities in `observe`
+mode or low-budget sessions where subagent overhead is not worthwhile. Either way, the output must
+match the JSON shapes below so it folds cleanly into `session_state.json`.
 
 ## Role prompt templates
 
@@ -69,8 +69,8 @@ with the exact JSON to return. (Source objects use placeholder ids the main agen
 > You are **<expert.name>**, an expert on **<topic>** with the perspective: <expert.perspective>.
 > The question on the table is: **<question text>**. Current map digest: <digest>.
 >
-> Load web tools (`ToolSearch select:WebSearch,WebFetch`), then answer in your own voice, grounded
-> in sources you actually fetch (up to <searches_per_turn> searches). Give 2–4 atomic claims, each
+> Use the available live web-search and page-fetch capabilities, then answer in your own voice,
+> grounded in sources you actually open (up to <searches_per_turn> searches). Give 2–4 atomic claims, each
 > with a source anchor (url + title + snippet). If you disagree with an existing claim, say so
 > explicitly. Raise up to 2 follow-up questions from your perspective. Do not invent sources.
 >
@@ -99,7 +99,8 @@ with the exact JSON to return. (Source objects use placeholder ids the main agen
 ### Retrieval (expansion)
 
 > Find corroborating or opposing sources for this claim/concept on **<topic>**: <claim or concept>.
-> Load web tools, run up to <searches_per_turn> searches, fetch the best pages.
+> Use the available live web-search and page-fetch capabilities. Run up to
+> <searches_per_turn> searches and open the best pages.
 >
 > Return ONLY: `{ "sources": [{"url":"...","title":"...","publisher":"","snippet":"...",
 > "supports": true}], "note": "what this changes (e.g. confirms / contradicts / adds nuance)" }`

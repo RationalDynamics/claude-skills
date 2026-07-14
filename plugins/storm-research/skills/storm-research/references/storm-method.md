@@ -58,8 +58,8 @@ disagreement between sources rather than averaging it — mark such notes `conte
 ### Research-subagent prompt template (copy, fill the `<...>`)
 
 > You are a researcher investigating **<topic>** from the perspective of **<perspective.name>**
-> (focus: <perspective.focus>). First load web tools: call ToolSearch with
-> `select:WebSearch,WebFetch`, then use them.
+> (focus: <perspective.focus>). Use the available live web-search and page-fetch capabilities.
+> Open every page used as evidence rather than relying on search-result snippets.
 >
 > Run a grounded research conversation: (1) ask your most important question; (2) answer it ONLY
 > from web search + fetched pages, emitting one evidence note per discrete claim; (3) inspect gaps

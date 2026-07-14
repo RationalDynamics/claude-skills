@@ -1,0 +1,20 @@
+{
+  "name": "storm-research",
+  "version": "0.2.0",
+  "description": "Perspective-driven, outline-first long-form research (Stanford STORM): multi-perspective research conversations, an evidence-grounded outline, a sectioned cited article, and a deterministic citation audit.",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "STORM Research",
+    "shortDescription": "Build multi-perspective cited research reports",
+    "longDescription": "Research a topic from distinct perspectives, synthesize an evidence-grounded long-form report, and audit its citations.",
+    "developerName": "Rational Dynamics",
+    "category": "Research",
+    "capabilities": ["Web Research", "Write", "Citations"],
+    "defaultPrompt": ["Research this topic with STORM and produce a cited report."]
+  }
+}

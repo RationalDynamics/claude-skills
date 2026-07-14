@@ -37,17 +37,18 @@ to the human, persist state between turns, and let them steer. You are also the 
 
 ## How it runs
 
-Instruction-driven; no scripts. Experts and the moderator are `Agent` subagents spawned per turn
-(independent experts in parallel via several Agent calls in one message), or simulated inline in
-`observe`/low-budget sessions. Web tools are deferred — load with
-`ToolSearch("select:WebSearch,WebFetch")` before use. Each subagent prompt is self-contained and
-ends with the exact JSON to return (templates in `references/discourse-policy.md`).
+Instruction-driven; no scripts. Use the host's native subagent capability for experts and the
+moderator when available. Run independent experts concurrently up to the host's concurrency limit,
+or simulate a role inline in `observe`/low-budget sessions. Confirm live web-search and page-fetch
+capabilities are available before grounded turns. Each subagent prompt is self-contained and ends
+with the exact JSON to return (templates in `references/discourse-policy.md`).
 
-Read all three references before running turns:
+Read all four references before running turns:
 - `references/state-and-mindmap.md` — the `session_state.json` schema, ID-minting, update rules
   (read before touching state).
 - `references/discourse-policy.md` — turn-selection heuristics, stop conditions, role prompts.
 - `references/session-artifacts.md` — how to render `mind_map.md`, `transcript.md`, `report.md`, etc.
+- `references/source-policy.md` — source selection, grounding, dedupe, and report citation rules.
 
 ## Procedure
 
@@ -89,10 +90,11 @@ visible.
 `status:"consolidating"`. Then synthesize `report.md` **from the mind map**: organize concepts into
 an outline (overview → themes → debates/open tensions → open questions), draft each section grounded
 **only** in that branch's claims/sources with `[n]` citations, present contradictions even-handedly,
-and add an executive summary. For a polished long-form write-up you may spawn per-section subagents or
-reuse the drafting/citation discipline from the `storm-research` skill's references. Write `report.md`,
+and add an executive summary. For a polished long-form write-up, spawn per-section subagents when
+useful and follow this skill's `references/source-policy.md`. Write `report.md`,
 `sources.md`, refreshed `mind_map.md`, `transcript.md` (from `turn_history`), and `open_questions.md`;
-set `status:"reported"`. `SendUserFile` the report and note the session is resumable.
+set `status:"reported"`. Share or link the report using the current client's native file-delivery
+capability and note the session is resumable.
 
 ## Output artifacts (`./costorm_sessions/<slug>/`)
 

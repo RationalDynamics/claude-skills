@@ -1,0 +1,20 @@
+{
+  "name": "tdd",
+  "version": "0.2.0",
+  "description": "Test-driven development with a red-green-refactor loop, plus references on deep modules, interface design, mocking, and refactoring.",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Test-Driven Development",
+    "shortDescription": "Build changes with a red-green-refactor loop",
+    "longDescription": "Implement features and fixes through behavior-focused, vertical red-green-refactor cycles using public interfaces.",
+    "developerName": "Rational Dynamics",
+    "category": "Development",
+    "capabilities": ["Read", "Write", "Test"],
+    "defaultPrompt": ["Implement this change with a red-green-refactor loop."]
+  }
+}

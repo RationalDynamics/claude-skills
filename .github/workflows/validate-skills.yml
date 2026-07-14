@@ -1,0 +1,56 @@
+name: Validate skills
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CLAUDE_CODE_VERSION: "2.1.198"
+  CODEX_CLI_VERSION: "0.144.4"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install -r requirements-dev.txt
+          npm install --global \
+            "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+            "@openai/codex@${CODEX_CLI_VERSION}"
+
+      - name: Validate repository contract
+        run: python3 scripts/validate_cross_platform.py
+
+      - name: Validate Claude marketplace
+        run: claude plugin validate --strict .
+
+      - name: Smoke-test native Codex installs
+        shell: bash
+        run: |
+          export CODEX_HOME="$(mktemp -d)/.codex"
+          mkdir -p "$CODEX_HOME"
+          codex plugin marketplace add "$GITHUB_WORKSPACE"
+          codex plugin list
+          for plugin in \
+            esoteric-elucidation \
+            storm-research \
+            costorm-session \
+            grill-me \
+            tdd
+          do
+            codex plugin add "$plugin@devo-skills"
+          done

@@ -1,9 +1,10 @@
 {
   "name": "grill-me",
   "description": "Interview the user relentlessly about a plan or design, resolving each branch of the decision tree until shared understanding. Use to stress-test a plan.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "chrisvandermey",
     "email": "chris@rationaldynamics.ai"
-  }
+  },
+  "skills": "./skills/"
 }

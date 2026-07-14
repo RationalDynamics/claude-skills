@@ -1,0 +1,6 @@
+interface:
+  display_name: "Co-STORM Session"
+  short_description: "Run steerable, resumable multi-expert research"
+  default_prompt: "Use $costorm-session to run a steerable, resumable multi-expert research session on this topic."
+policy:
+  allow_implicit_invocation: true

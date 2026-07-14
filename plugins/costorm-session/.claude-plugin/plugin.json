@@ -1,9 +1,10 @@
 {
   "name": "costorm-session",
   "description": "Interactive, human-in-the-loop Co-STORM research: a steerable, turn-based discourse among LLM experts and a moderator over web sources, growing a shared mind map, then synthesizing a cited report. Resumable.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "chrisvandermey",
     "email": "chris@rationaldynamics.ai"
-  }
+  },
+  "skills": "./skills/"
 }

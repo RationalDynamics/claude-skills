@@ -1,0 +1,6 @@
+interface:
+  display_name: "Test-Driven Development"
+  short_description: "Build changes with a red-green-refactor loop"
+  default_prompt: "Use $tdd to implement this change through a red-green-refactor test-driven loop."
+policy:
+  allow_implicit_invocation: true

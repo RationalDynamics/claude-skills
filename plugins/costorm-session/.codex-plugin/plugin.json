@@ -1,0 +1,20 @@
+{
+  "name": "costorm-session",
+  "version": "0.2.0",
+  "description": "Interactive, human-in-the-loop Co-STORM research: a steerable, turn-based discourse among LLM experts and a moderator over web sources, growing a shared mind map, then synthesizing a cited report. Resumable.",
+  "author": {
+    "name": "chrisvandermey",
+    "email": "chris@rationaldynamics.ai"
+  },
+  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Co-STORM Session",
+    "shortDescription": "Run steerable, resumable multi-expert research",
+    "longDescription": "Run an interactive research roundtable that grows a durable mind map and synthesizes a cited report when the user is ready.",
+    "developerName": "Rational Dynamics",
+    "category": "Research",
+    "capabilities": ["Web Research", "Interactive", "Write"],
+    "defaultPrompt": ["Start a steerable Co-STORM research session on this topic."]
+  }
+}

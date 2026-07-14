@@ -1,0 +1,6 @@
+interface:
+  display_name: "Esoteric Elucidation"
+  short_description: "Explain unfamiliar systems with clear context"
+  default_prompt: "Use $esoteric-elucidation to explain this unfamiliar code or system in plain English, including its blast radius and data flow."
+policy:
+  allow_implicit_invocation: true

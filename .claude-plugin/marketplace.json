@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "devo-skills",
-  "description": "Shared catalog of Claude Code / Cowork Agent Skills for the devo team. Each skill is an independently installable peer plugin — install only the ones you want, and add your own by dropping a folder in plugins/ and an entry here.",
+  "description": "Shared catalog of independently installable Agent Skills for the devo team. The Claude catalog includes every plugin; selected plugins also ship native Codex packaging.",
   "owner": {
     "name": "chrisvandermey",
     "email": "chris@rationaldynamics.ai"

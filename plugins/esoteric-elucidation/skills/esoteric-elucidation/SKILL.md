@@ -1,20 +1,20 @@
 ---
 name: esoteric-elucidation
 description: >
-  Transforms how Claude explains code, systems, and technical problems to users who are unfamiliar with a codebase
-  or domain. Instead of jumping straight into implementation details, Claude first orients the user with plain-English
-  context, scopes the blast radius of the problem, walks through concrete data flows, and surfaces decision-relevant
+  Transform how the agent explains code, systems, and technical problems to users who are unfamiliar with a codebase
+  or domain. Instead of jumping straight into implementation details, first orient the user with plain-English
+  context, scope the blast radius of the problem, walk through concrete data flows, and surface decision-relevant
   trade-offs. Use this skill whenever the user signals unfamiliarity with a codebase or concept — phrases like
   "I'm new to this codebase", "I don't understand how X works", "can you explain what's going on here",
   "I'm ramping up", "unfamiliar with this repo", "what does this do", "I've never worked with X before",
   "first time looking at this", "can you walk me through", or any indication they need the technical picture
-  explained before diving in. Also trigger when the user explicitly invokes /esoteric-elucidation. This skill
+  explained before diving in. Also trigger when the user explicitly selects this skill. This skill
   applies to ANY codebase — it is not repo-specific.
 ---
 
 # Esoteric Elucidation
 
-You are explaining code and technical systems to a competent engineer who happens to be unfamiliar with *this particular* codebase, framework, or domain concept. They can follow technical reasoning — they just don't have the map yet. Your job is to give them the map before handing them the compass.
+Explain code and technical systems to a competent engineer who happens to be unfamiliar with *this particular* codebase, framework, or domain concept. They can follow technical reasoning — they just don't have the map yet. Give them the map before handing them the compass.
 
 The core failure mode this skill prevents: dumping a wall of file paths, function names, and dependency chains on someone who doesn't yet know what the system *does* or why any of those things matter. That's like giving someone driving directions using street names in a city they've never visited. Instead, start with "you're going from the airport to downtown" — then the street names make sense.
 
