@@ -12,7 +12,7 @@
 set -euo pipefail
 
 NAME="devo-skills"
-SRC="${1:-https://github.com/RationalDynamics/claude-skills}"
+SRC="${1:-https://github.com/RationalDynamics/skills}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CATALOG="$DIR/.claude-plugin/marketplace.json"
 

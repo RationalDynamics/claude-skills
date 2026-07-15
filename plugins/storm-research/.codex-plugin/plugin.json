@@ -6,7 +6,7 @@
     "name": "chrisvandermey",
     "email": "chris@rationaldynamics.ai"
   },
-  "repository": "https://github.com/RationalDynamics/claude-skills",
+  "repository": "https://github.com/RationalDynamics/skills",
   "skills": "./skills/",
   "interface": {
     "displayName": "STORM Research",

@@ -19,7 +19,7 @@ for both clients; the remaining plugins are still Claude-only.
 From an interactive Claude Code session:
 
 ```text
-/plugin marketplace add RationalDynamics/claude-skills
+/plugin marketplace add RationalDynamics/skills
 /plugin install storm-research@devo-skills
 /reload-plugins
 ```
@@ -27,7 +27,7 @@ From an interactive Claude Code session:
 Replace `storm-research` with any plugin above. The non-interactive CLI equivalents are:
 
 ```sh
-claude plugin marketplace add RationalDynamics/claude-skills
+claude plugin marketplace add RationalDynamics/skills
 claude plugin install storm-research@devo-skills
 ```
 
@@ -39,14 +39,14 @@ list from the catalog (so it never drifts) and installs each one:
 ```sh
 ./install-all.sh
 # or point it at a local checkout instead of GitHub:
-# ./install-all.sh /path/to/claude-skills
+# ./install-all.sh /path/to/skills
 ```
 
 If you'd rather not clone, add the marketplace once and loop over the names
 (a plain shell one-liner, run outside the interactive `/plugin` prompt):
 
 ```sh
-claude plugin marketplace add https://github.com/RationalDynamics/claude-skills
+claude plugin marketplace add https://github.com/RationalDynamics/skills
 for p in breakpoint neuralize grill-me tdd esoteric-elucidation the-orchestrator \
          storm-research costorm-session camera-lens-travel-eval scaffold-agent-team \
          session-cost; do
@@ -57,7 +57,7 @@ done
 > Skills load at session start, so start a fresh session after installing.
 
 In Claude Code Desktop, use a local or SSH Code session. Enter `/plugin`, open **Marketplaces**, and
-add `RationalDynamics/claude-skills` if needed. Then click **+ → Plugins → Add plugin**, choose
+add `RationalDynamics/skills` if needed. Then click **+ → Plugins → Add plugin**, choose
 **Devo Skills**, and install the plugin. Claude's cloud/remote sessions do not load plugins. Plugin
 skills become available after `/reload-plugins` or in a new session.
 
@@ -66,7 +66,7 @@ skills become available after `/reload-plugins` or in a new session.
 From a terminal:
 
 ```sh
-codex plugin marketplace add RationalDynamics/claude-skills
+codex plugin marketplace add RationalDynamics/skills
 codex plugin add storm-research@devo-skills
 ```
 
