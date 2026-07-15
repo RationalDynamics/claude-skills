@@ -1,0 +1,12 @@
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_METRICS_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT": "https://tokens.rationaldynamics.ai/otlp/v1/metrics",
+    "OTEL_METRIC_EXPORT_INTERVAL": "60000",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+    "CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS": "60000"
+  },
+  "otelHeadersHelper": ".claude/git-tags.sh"
+}
