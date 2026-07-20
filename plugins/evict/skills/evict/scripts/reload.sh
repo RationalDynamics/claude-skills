@@ -28,14 +28,14 @@ if [ ! -f "$RELOAD_FILE" ]; then
   exit 0
 fi
 
-# The harness caps the `additionalContext` it injects inline: above roughly
-# INLINE_LIMIT bytes it persists the full text to its own file and hands the model
-# only a ~2KB preview, so large kept-context silently fails to restore. Stay under
-# the cap by inlining only small payloads; for large ones, preserve the reload file
-# at a stable path and inject a short pointer so the model Reads the FULL content
-# (the Read tool paginates with no 2KB cap).
+# Claude Code caps hook `additionalContext` at 10,000 characters: above that it
+# persists the full text to a file and injects only a preview, so large kept-context
+# silently fails to restore. Inline only payloads that stay safely under the cap
+# (9000 bytes leaves margin for byte-vs-char width and JSON escaping); for larger
+# ones, preserve the reload file at a stable path and inject a short pointer so the
+# model reads the FULL content on its next turn (the read path has no inline cap).
 CONTENT_SIZE=$(wc -c < "$RELOAD_FILE" | tr -d ' ')
-INLINE_LIMIT=10000
+INLINE_LIMIT=9000
 
 emit() { python3 -c "import json,sys; print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': sys.stdin.read()}}))"; }
 
